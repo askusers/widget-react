@@ -81,5 +81,8 @@
     "url": "https://github.com/askusers/widget-react.git"
   },
   "license": "MIT",
-  "author": "Ask Users"
+  "author": "Ask Users",
+  "publishConfig": {
+    "access": "public"
+  }
 }
