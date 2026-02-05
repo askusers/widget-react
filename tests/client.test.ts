@@ -58,9 +58,13 @@ describe('AskUsersClient', () => {
     });
 
     it('uses custom baseUrl', async () => {
+      const mockData = {
+        form: { id: 'form-1', title: 'Test Form' },
+        questions: [],
+      };
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ data: {} }),
+        json: async () => ({ data: mockData }),
       });
 
       const client = new AskUsersClient({
@@ -75,14 +79,14 @@ describe('AskUsersClient', () => {
       );
     });
 
-    it('throws on non-OK response', async () => {
+    it('throws generic error on non-OK response', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         statusText: 'Not Found',
       });
 
       const client = new AskUsersClient({ apiKey: 'test-key' });
-      await expect(client.getForm('nonexistent')).rejects.toThrow('Failed to load form: Not Found');
+      await expect(client.getForm('nonexistent')).rejects.toThrow('Failed to load form. Please try again later.');
     });
   });
 
@@ -115,30 +119,16 @@ describe('AskUsersClient', () => {
       );
     });
 
-    it('throws on error with error body message', async () => {
+    it('throws generic error on submit failure', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         statusText: 'Bad Request',
-        json: async () => ({ error: 'Validation failed: missing required fields' }),
       });
 
       const client = new AskUsersClient({ apiKey: 'test-key' });
       await expect(
         client.submitForm('form-1', { submission_data: {} })
-      ).rejects.toThrow('Validation failed: missing required fields');
-    });
-
-    it('throws with statusText when error body parsing fails', async () => {
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        statusText: 'Internal Server Error',
-        json: async () => { throw new Error('Invalid JSON'); },
-      });
-
-      const client = new AskUsersClient({ apiKey: 'test-key' });
-      await expect(
-        client.submitForm('form-1', { submission_data: {} })
-      ).rejects.toThrow('Failed to submit form: Internal Server Error');
+      ).rejects.toThrow('Failed to submit form. Please try again later.');
     });
   });
 
@@ -167,14 +157,14 @@ describe('AskUsersClient', () => {
       expect(result).toEqual(mockData);
     });
 
-    it('throws on non-OK response', async () => {
+    it('throws generic error on non-OK response', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         statusText: 'Forbidden',
       });
 
       const client = new AskUsersClient({ apiKey: 'test-key' });
-      await expect(client.getSurvey('survey-1')).rejects.toThrow('Failed to load survey: Forbidden');
+      await expect(client.getSurvey('survey-1')).rejects.toThrow('Failed to load survey. Please try again later.');
     });
   });
 
@@ -207,17 +197,16 @@ describe('AskUsersClient', () => {
       );
     });
 
-    it('throws on error with error body message', async () => {
+    it('throws generic error on submit failure', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         statusText: 'Bad Request',
-        json: async () => ({ error: 'Survey is closed' }),
       });
 
       const client = new AskUsersClient({ apiKey: 'test-key' });
       await expect(
         client.submitSurvey('survey-1', { response_data: {} })
-      ).rejects.toThrow('Survey is closed');
+      ).rejects.toThrow('Failed to submit survey. Please try again later.');
     });
   });
 

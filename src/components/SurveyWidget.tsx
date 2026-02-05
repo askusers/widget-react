@@ -579,17 +579,45 @@ function SurveyWidgetInner({
       return true;
     }
 
-    if (!question?.is_required) return true;
-
     // Use the same key logic as handleResponseChange
     const questionId = question?.id || `temp-${questionIndex}`;
     const response = responses[questionId];
-    if (response === undefined || response === null || response === '') {
-      return false;
+
+    // Required check
+    if (question?.is_required) {
+      if (response === undefined || response === null || response === '') {
+        return false;
+      }
+      if (Array.isArray(response) && response.length === 0) {
+        return false;
+      }
     }
-    if (Array.isArray(response) && response.length === 0) {
-      return false;
+
+    // Format validation (only when there's a value)
+    if (response && typeof response === 'string') {
+      switch (question?.question_type) {
+        case 'email': {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(response)) return false;
+          break;
+        }
+        case 'phone': {
+          const phoneRegex = /^[\d\s\-+()]+$/;
+          const digitsOnly = response.replace(/\D/g, '');
+          if (!phoneRegex.test(response) || digitsOnly.length < 10) return false;
+          break;
+        }
+        case 'url': {
+          try { new URL(response); } catch { return false; }
+          break;
+        }
+      }
+
+      // Length constraints
+      if (question?.min_length && response.length < question.min_length) return false;
+      if (question?.max_length && response.length > question.max_length) return false;
     }
+
     return true;
   };
 
@@ -1817,8 +1845,8 @@ function SurveyWidgetInner({
             }}
             dangerouslySetInnerHTML={{
               __html: DOMPurify.sanitize(question.question_html || '', {
-                ALLOWED_TAGS: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'em', 'u', 's', 'a', 'ul', 'ol', 'li', 'img', 'iframe', 'br', 'hr', 'blockquote', 'code', 'pre'],
-                ALLOWED_ATTR: ['href', 'src', 'alt', 'class', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'title', 'style'],
+                ALLOWED_TAGS: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'em', 'u', 's', 'a', 'ul', 'ol', 'li', 'img', 'br', 'hr', 'blockquote', 'code', 'pre', 'span', 'div'],
+                ALLOWED_ATTR: ['href', 'src', 'alt', 'class', 'width', 'height', 'title', 'target', 'rel'],
                 ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
               })
             }}

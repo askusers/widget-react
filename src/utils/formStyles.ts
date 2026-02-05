@@ -1,5 +1,22 @@
 import { FormAppearanceConfig, FormLayoutConfig } from '../types';
 
+/**
+ * Validate and escape a URL for safe use inside CSS url().
+ * Only allows https:// URLs and escapes characters that could break
+ * out of the url() context.
+ */
+function sanitizeCSSUrl(url: string): string {
+  const trimmed = url.trim();
+  if (!/^https?:\/\//i.test(trimmed)) return '';
+  // Escape parentheses, quotes, and backslashes to prevent CSS injection
+  return trimmed
+    .replace(/\\/g, '\\\\')
+    .replace(/\(/g, '\\(')
+    .replace(/\)/g, '\\)')
+    .replace(/'/g, "\\'")
+    .replace(/"/g, '\\"');
+}
+
 const FONT_FAMILIES: Record<string, string> = {
   'inter': 'Inter, system-ui, -apple-system, sans-serif',
   'roboto': 'Roboto, system-ui, -apple-system, sans-serif',
@@ -372,11 +389,13 @@ export function generateBackgroundStyles(layoutConfig?: FormLayoutConfig): Recor
       break;
     case 'image':
       if (bg.value) {
+        const safeUrl = sanitizeCSSUrl(bg.value);
+        if (!safeUrl) break;
         if (bg.overlay) {
           const overlayOpacity = (bg.overlayOpacity || 50) / 100;
-          styles.backgroundImage = `linear-gradient(rgba(0, 0, 0, ${overlayOpacity}), rgba(0, 0, 0, ${overlayOpacity})), url(${bg.value})`;
+          styles.backgroundImage = `linear-gradient(rgba(0, 0, 0, ${overlayOpacity}), rgba(0, 0, 0, ${overlayOpacity})), url('${safeUrl}')`;
         } else {
-          styles.backgroundImage = `url(${bg.value})`;
+          styles.backgroundImage = `url('${safeUrl}')`;
         }
         styles.backgroundSize = bg.backgroundSize || 'cover';
         styles.backgroundPosition = 'center';
@@ -418,7 +437,9 @@ export function generateSplitLayoutStyles(layoutConfig?: FormLayoutConfig): Reco
       break;
     case 'image':
       if (split.mediaUrl) {
-        styles.backgroundImage = `url(${split.mediaUrl})`;
+        const safeSplitUrl = sanitizeCSSUrl(split.mediaUrl);
+        if (!safeSplitUrl) break;
+        styles.backgroundImage = `url('${safeSplitUrl}')`;
         styles.backgroundSize = 'cover';
         styles.backgroundPosition = 'center';
         styles.backgroundRepeat = 'no-repeat';

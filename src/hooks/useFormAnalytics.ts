@@ -14,6 +14,7 @@ interface TrackFormEventParams {
   fieldId?: string;
   fieldOrder?: number;
   apiKey?: string;
+  baseUrl?: string;
   displayMode?: string;
   source?: string;
   contextType?: string;
@@ -35,6 +36,7 @@ interface AnalyticsEvent {
   } & DeviceInfo;
   success: boolean;
   apiKey?: string;
+  baseUrl?: string;
 }
 
 function parseUserAgent(): DeviceInfo {
@@ -101,7 +103,7 @@ let analyticsQueue: AnalyticsEvent[] = [];
 let batchTimer: ReturnType<typeof setTimeout> | null = null;
 let unloadHandlersSet = false;
 let isUnloading = false;
-let baseUrlForBatch = 'https://api.askusers.org';
+const DEFAULT_ANALYTICS_URL = 'https://api.askusers.org';
 
 function startBatchTimer() {
   if (batchTimer) return;
@@ -123,45 +125,41 @@ function flushAnalyticsQueue() {
     const eventsToSend = [...analyticsQueue];
     analyticsQueue = [];
 
-    const eventsByApiKey: Record<string, Omit<AnalyticsEvent, 'apiKey'>[]> = {};
+    // Group events by apiKey + baseUrl to send to correct endpoints with correct auth
+    const eventGroups: Record<string, { apiKey: string; baseUrl: string; events: Omit<AnalyticsEvent, 'apiKey' | 'baseUrl'>[] }> = {};
     eventsToSend.forEach(event => {
       const apiKey = event.apiKey || 'default';
-      if (!eventsByApiKey[apiKey]) {
-        eventsByApiKey[apiKey] = [];
+      const baseUrl = event.baseUrl || DEFAULT_ANALYTICS_URL;
+      const groupKey = `${apiKey}::${baseUrl}`;
+      if (!eventGroups[groupKey]) {
+        eventGroups[groupKey] = { apiKey, baseUrl, events: [] };
       }
-      const { apiKey: _unused, ...eventWithoutApiKey } = event;
-      void _unused;
-      eventsByApiKey[apiKey].push(eventWithoutApiKey);
+      const { apiKey: _ak, baseUrl: _bu, ...eventWithoutMeta } = event;
+      void _ak; void _bu;
+      eventGroups[groupKey].events.push(eventWithoutMeta);
     });
 
-    Object.entries(eventsByApiKey).forEach(([apiKey, events]) => {
+    Object.values(eventGroups).forEach(({ apiKey, baseUrl, events }) => {
       const requestBody = JSON.stringify({ events });
-
-      if (isUnloading && typeof navigator !== 'undefined' && navigator.sendBeacon) {
-        const blob = new Blob([requestBody], { type: 'application/json' });
-        navigator.sendBeacon(`${baseUrlForBatch}/api/analytics/batch`, blob);
-      } else {
-        const headers: HeadersInit = {
-          'Content-Type': 'application/json'
-        };
-        if (apiKey !== 'default') {
-          headers['X-API-Key'] = apiKey;
-        }
-
-        fetch(`${baseUrlForBatch}/api/analytics/batch`, {
-          method: 'POST',
-          headers,
-          body: requestBody,
-          keepalive: true
-        }).catch(() => {
-          if (!isUnloading) {
-            analyticsQueue.push(...events.map(event => ({
-              ...event,
-              apiKey
-            })));
-          }
-        });
+      const headers: HeadersInit = { 'Content-Type': 'application/json' };
+      if (apiKey !== 'default') {
+        headers['X-API-Key'] = apiKey;
       }
+
+      fetch(`${baseUrl}/api/analytics/batch`, {
+        method: 'POST',
+        headers,
+        body: requestBody,
+        keepalive: true
+      }).catch(() => {
+        if (!isUnloading) {
+          analyticsQueue.push(...events.map(event => ({
+            ...event,
+            apiKey,
+            baseUrl
+          })));
+        }
+      });
     });
   } catch {
     // Silently fail
@@ -212,7 +210,8 @@ async function trackFormEvent(params: TrackFormEventParams): Promise<void> {
         ...deviceInfo
       },
       success: true,
-      apiKey: params.apiKey
+      apiKey: params.apiKey,
+      baseUrl: params.baseUrl
     };
 
     analyticsQueue.push(payload);
@@ -243,11 +242,6 @@ export function useFormAnalytics(
 ) {
   const sessionId = useMemo(() => getOrCreateSessionId(), []);
 
-  // Update module-level base URL if provided
-  if (options?.baseUrl) {
-    baseUrlForBatch = options.baseUrl;
-  }
-
   const trackEvent = useCallback(async (
     eventType: FormEventType,
     eventOptions?: {
@@ -261,6 +255,7 @@ export function useFormAnalytics(
       surveyId,
       sessionId,
       apiKey: options?.apiKey,
+      baseUrl: options?.baseUrl,
       fieldId: eventOptions?.fieldId,
       fieldOrder: eventOptions?.fieldOrder,
       displayMode: options?.displayMode,
@@ -268,7 +263,7 @@ export function useFormAnalytics(
       contextType: options?.contextType,
       contextId: options?.contextId
     });
-  }, [formId, surveyId, sessionId, options?.apiKey, options?.displayMode, options?.source, options?.contextType, options?.contextId]);
+  }, [formId, surveyId, sessionId, options?.apiKey, options?.baseUrl, options?.displayMode, options?.source, options?.contextType, options?.contextId]);
 
   const trackView = useCallback(() => trackEvent('form_view'), [trackEvent]);
   const trackFieldFocus = useCallback((fieldId: string, fieldOrder: number) =>

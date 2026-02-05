@@ -74,6 +74,41 @@ export function getBrandingStyles(branding?: CustomBranding, forceTheme?: 'light
   };
 }
 
+/**
+ * Sanitize user-supplied CSS to prevent injection attacks.
+ * Strips dangerous properties and selectors that could enable
+ * data exfiltration, UI redressing, or resource loading.
+ */
+function sanitizeCSS(css?: string): string {
+  if (!css) return '';
+
+  // Remove any HTML tags (e.g., </style><script>)
+  let sanitized = css.replace(/<[^>]*>/g, '');
+
+  // Remove @import rules (could load external resources)
+  sanitized = sanitized.replace(/@import\b[^;]*/gi, '');
+
+  // Remove url() references (could exfiltrate data or load external resources)
+  sanitized = sanitized.replace(/url\s*\([^)]*\)/gi, 'url()');
+
+  // Remove expression() (IE CSS expressions)
+  sanitized = sanitized.replace(/expression\s*\([^)]*\)/gi, '');
+
+  // Remove -moz-binding (Firefox XBL)
+  sanitized = sanitized.replace(/-moz-binding\s*:[^;]*/gi, '');
+
+  // Remove behavior (IE .htc behaviors)
+  sanitized = sanitized.replace(/behavior\s*:[^;]*/gi, '');
+
+  // Remove position: fixed/absolute that could overlay host page
+  sanitized = sanitized.replace(/position\s*:\s*(fixed|absolute)\b[^;]*/gi, '');
+
+  // Remove z-index (prevent overlaying host content)
+  sanitized = sanitized.replace(/z-index\s*:[^;]*/gi, '');
+
+  return sanitized;
+}
+
 export function generateBrandingCSS(styles: BrandingStyles): string {
   const { colors } = styles;
 
@@ -130,7 +165,7 @@ export function generateBrandingCSS(styles: BrandingStyles): string {
       border-color: var(--border);
     }
 
-    ${styles.customCSS || ''}
+    ${sanitizeCSS(styles.customCSS)}
   `.trim();
 }
 

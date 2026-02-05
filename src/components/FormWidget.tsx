@@ -268,8 +268,10 @@ function FormWidgetInner({
   trackSubmitAttempt,
   trackSubmitSuccess,
 }: FormWidgetInnerProps) {
-  // Generate a unique storage key for this form
-  const formStorageKey = `form_draft_${form.title.replace(/\s+/g, '_').toLowerCase()}`;
+  // Generate a unique storage key for this form (prefer formId for uniqueness, fall back to title hash)
+  const formStorageKey = formId
+    ? `askusers_draft_${formId}`
+    : `askusers_draft_${form.title.replace(/\s+/g, '_').toLowerCase()}`;
 
   const [responses, setResponses] = useState<Record<string, string | number | string[]>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -313,7 +315,7 @@ function FormWidgetInner({
     if (isDemo || typeof window === 'undefined') return;
 
     try {
-      const savedResponses = localStorage.getItem(formStorageKey);
+      const savedResponses = sessionStorage.getItem(formStorageKey);
       if (savedResponses) {
         const parsed = JSON.parse(savedResponses);
         setResponses(parsed);
@@ -329,7 +331,7 @@ function FormWidgetInner({
 
     try {
       if (Object.keys(responses).length > 0) {
-        localStorage.setItem(formStorageKey, JSON.stringify(responses));
+        sessionStorage.setItem(formStorageKey, JSON.stringify(responses));
       }
     } catch (err) {
       console.error('Failed to save form responses:', err);
@@ -645,7 +647,7 @@ function FormWidgetInner({
 
       // Clear saved draft from localStorage after successful submission
       if (typeof window !== 'undefined') {
-        localStorage.removeItem(formStorageKey);
+        sessionStorage.removeItem(formStorageKey);
       }
 
       // Call success callback
@@ -1589,8 +1591,8 @@ function FormWidgetInner({
             }}
             dangerouslySetInnerHTML={{
               __html: DOMPurify.sanitize(question.question_html || '', {
-                ALLOWED_TAGS: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'em', 'u', 's', 'a', 'ul', 'ol', 'li', 'img', 'iframe', 'br', 'hr', 'blockquote', 'code', 'pre'],
-                ALLOWED_ATTR: ['href', 'src', 'alt', 'class', 'width', 'height', 'frameborder', 'allow', 'allowfullscreen', 'title', 'style'],
+                ALLOWED_TAGS: ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'strong', 'em', 'u', 's', 'a', 'ul', 'ol', 'li', 'img', 'br', 'hr', 'blockquote', 'code', 'pre', 'span', 'div'],
+                ALLOWED_ATTR: ['href', 'src', 'alt', 'class', 'width', 'height', 'title', 'target', 'rel'],
                 ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
               })
             }}

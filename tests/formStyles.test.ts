@@ -329,7 +329,7 @@ describe('formStyles utilities', () => {
         },
       };
       const styles = generateSplitLayoutStyles(config);
-      expect(styles.backgroundImage).toContain('url(https://example.com/image.jpg)');
+      expect(styles.backgroundImage).toContain("url('https://example.com/image.jpg')");
       expect(styles.backgroundSize).toBe('cover');
       expect(styles.backgroundPosition).toBe('center');
     });
