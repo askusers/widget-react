@@ -1,0 +1,130 @@
+/* Tailwind CSS v4 — theme + utilities only (no preflight to avoid host conflicts) */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme" layer(theme);
+@import "tailwindcss/utilities" layer(utilities);
+
+/* Dark mode uses class-based detection, not prefers-color-scheme */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Scan component sources for utility class detection */
+@source "../components/**/*.tsx";
+@source "../**/*.tsx";
+
+/* ========================================================================== */
+/* @askusers/widget-react scoped base resets                                  */
+/* We skip Tailwind's preflight to avoid host-app conflicts. Instead we apply */
+/* a minimal, scoped reset inside our widget containers only.                 */
+/* ========================================================================== */
+
+@layer base {
+  /* Container resets */
+  .askusers-widget-container,
+  .askusers-survey-widget-container {
+    box-sizing: border-box;
+    font-family: var(--form-font-family, Inter, system-ui, -apple-system, sans-serif);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    color: var(--form-text-color, #1f2937);
+  }
+
+  .askusers-widget-container *,
+  .askusers-survey-widget-container *,
+  .askusers-widget-container *::before,
+  .askusers-survey-widget-container *::before,
+  .askusers-widget-container *::after,
+  .askusers-survey-widget-container *::after {
+    box-sizing: border-box;
+    border-width: 0;
+    border-style: solid;
+    border-color: currentColor;
+  }
+
+  /* Button reset — remove default browser styling */
+  .askusers-widget-container button,
+  .askusers-survey-widget-container button {
+    appearance: none;
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    line-height: inherit;
+  }
+
+  /* Input / textarea / select reset */
+  .askusers-widget-container input,
+  .askusers-widget-container textarea,
+  .askusers-widget-container select,
+  .askusers-survey-widget-container input,
+  .askusers-survey-widget-container textarea,
+  .askusers-survey-widget-container select {
+    font: inherit;
+    color: inherit;
+    line-height: inherit;
+    margin: 0;
+  }
+
+  .askusers-widget-container textarea,
+  .askusers-survey-widget-container textarea {
+    resize: vertical;
+  }
+
+  /* Image resets */
+  .askusers-widget-container img,
+  .askusers-survey-widget-container img {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Heading / paragraph margin reset */
+  .askusers-widget-container h1,
+  .askusers-widget-container h2,
+  .askusers-widget-container h3,
+  .askusers-widget-container h4,
+  .askusers-widget-container p,
+  .askusers-survey-widget-container h1,
+  .askusers-survey-widget-container h2,
+  .askusers-survey-widget-container h3,
+  .askusers-survey-widget-container h4,
+  .askusers-survey-widget-container p {
+    margin: 0;
+  }
+
+  /* Remove list bullets inside widgets */
+  .askusers-widget-container ul,
+  .askusers-widget-container ol,
+  .askusers-survey-widget-container ul,
+  .askusers-survey-widget-container ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Label */
+  .askusers-widget-container label,
+  .askusers-survey-widget-container label {
+    cursor: pointer;
+  }
+
+  /* SVG defaults */
+  .askusers-widget-container svg,
+  .askusers-survey-widget-container svg {
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  /* Spinner animation */
+  @keyframes askusers-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .askusers-widget-container .animate-spin,
+  .askusers-survey-widget-container .animate-spin {
+    animation: askusers-spin 1s linear infinite;
+  }
+}
