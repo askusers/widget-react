@@ -73,11 +73,11 @@ export function SurveyWidget({
   // Use the theme detection hook
   const detectedTheme = useThemeDetection(themeProp);
 
-  // Create API client for fetching/submitting if apiKey is provided
+  // Create API client for fetching/submitting if surveyId is provided
   const client = useMemo(() => {
-    if (!apiKey) return null;
+    if (!surveyId) return null;
     return new AskUsersClient({ apiKey, baseUrl });
-  }, [apiKey, baseUrl]);
+  }, [surveyId, apiKey, baseUrl]);
 
   // Fetch survey data if surveyId + apiKey are provided
   useEffect(() => {

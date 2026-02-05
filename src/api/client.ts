@@ -8,7 +8,8 @@ import type {
 } from '../types';
 
 export interface AskUsersClientConfig {
-  apiKey: string;
+  /** Optional API key, used for analytics tracking only. Public form/survey endpoints require no auth. */
+  apiKey?: string;
   baseUrl?: string;
 }
 
@@ -95,7 +96,7 @@ function validateSurveyResponse(data: unknown): SurveyWithQuestions {
 }
 
 export class AskUsersClient {
-  private apiKey: string;
+  private apiKey?: string;
   private baseUrl: string;
   private analyticsQueue: AnalyticsEvent[] = [];
   private batchTimer: ReturnType<typeof setTimeout> | null = null;
@@ -115,11 +116,7 @@ export class AskUsersClient {
 
   async getForm(formId: string): Promise<FormWithQuestions> {
     const safeId = validateId(formId, 'formId');
-    const response = await fetch(`${this.baseUrl}/api/forms/${safeId}/public`, {
-      headers: {
-        'X-API-Key': this.apiKey,
-      },
-    });
+    const response = await fetch(`${this.baseUrl}/api/public/forms/${safeId}`);
 
     if (!response.ok) {
       throw new Error('Failed to load form. Please try again later.');
@@ -131,15 +128,13 @@ export class AskUsersClient {
 
   async submitForm(formId: string, data: Omit<FormSubmissionRequest, 'form_id'>): Promise<void> {
     const safeId = validateId(formId, 'formId');
-    const response = await fetch(`${this.baseUrl}/api/forms/${safeId}/submissions`, {
+    const response = await fetch(`${this.baseUrl}/api/public/forms/${safeId}/submissions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-API-Key': this.apiKey,
       },
       body: JSON.stringify({
-        form_id: safeId,
-        ...data,
+        submission_data: data.submission_data,
       }),
     });
 
@@ -154,11 +149,7 @@ export class AskUsersClient {
 
   async getSurvey(surveyId: string): Promise<SurveyWithQuestions> {
     const safeId = validateId(surveyId, 'surveyId');
-    const response = await fetch(`${this.baseUrl}/api/surveys/${safeId}/public`, {
-      headers: {
-        'X-API-Key': this.apiKey,
-      },
-    });
+    const response = await fetch(`${this.baseUrl}/api/public/surveys/${safeId}`);
 
     if (!response.ok) {
       throw new Error('Failed to load survey. Please try again later.');
@@ -170,15 +161,14 @@ export class AskUsersClient {
 
   async submitSurvey(surveyId: string, data: Omit<SurveyResponseRequest, 'survey_id'>): Promise<void> {
     const safeId = validateId(surveyId, 'surveyId');
-    const response = await fetch(`${this.baseUrl}/api/surveys/${safeId}/responses`, {
+    const response = await fetch(`${this.baseUrl}/api/public/surveys/${safeId}/responses`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-API-Key': this.apiKey,
       },
       body: JSON.stringify({
-        survey_id: safeId,
-        ...data,
+        response_data: data.response_data,
+        completion_status: 'completed',
       }),
     });
 
@@ -225,14 +215,14 @@ export class AskUsersClient {
 
       const requestBody = JSON.stringify({ events: eventsToSend });
 
-      // Always use fetch with keepalive to ensure API key is included in headers.
-      // sendBeacon does not support custom headers, which would skip authentication.
+      const headers: HeadersInit = { 'Content-Type': 'application/json' };
+      if (this.apiKey) {
+        headers['X-API-Key'] = this.apiKey;
+      }
+
       fetch(`${this.baseUrl}/api/analytics/batch`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': this.apiKey,
-        },
+        headers,
         body: requestBody,
         keepalive: true,
       }).catch(() => {

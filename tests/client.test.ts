@@ -33,7 +33,7 @@ describe('AskUsersClient', () => {
   });
 
   describe('getForm', () => {
-    it('makes correct GET request with API key header', async () => {
+    it('makes correct GET request without auth headers', async () => {
       const mockData = {
         form: { id: 'form-1', title: 'Test Form' },
         questions: [],
@@ -43,16 +43,11 @@ describe('AskUsersClient', () => {
         json: async () => ({ data: mockData }),
       });
 
-      const client = new AskUsersClient({ apiKey: 'test-api-key' });
+      const client = new AskUsersClient({});
       const result = await client.getForm('form-1');
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://api.askusers.org/api/forms/form-1/public',
-        {
-          headers: {
-            'X-API-Key': 'test-api-key',
-          },
-        }
+        'https://api.askusers.org/api/public/forms/form-1',
       );
       expect(result).toEqual(mockData);
     });
@@ -68,14 +63,12 @@ describe('AskUsersClient', () => {
       });
 
       const client = new AskUsersClient({
-        apiKey: 'key',
         baseUrl: 'https://custom.api.com',
       });
       await client.getForm('form-1');
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://custom.api.com/api/forms/form-1/public',
-        expect.any(Object),
+        'https://custom.api.com/api/public/forms/form-1',
       );
     });
 
@@ -91,29 +84,23 @@ describe('AskUsersClient', () => {
   });
 
   describe('submitForm', () => {
-    it('makes correct POST request with body', async () => {
+    it('makes correct POST request without auth headers', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
       });
 
-      const client = new AskUsersClient({ apiKey: 'test-api-key' });
-      const data = {
-        submission_data: { q1: 'answer1' },
-        session_id: 'session-123',
-      };
-      await client.submitForm('form-1', data);
+      const client = new AskUsersClient({});
+      await client.submitForm('form-1', { submission_data: { q1: 'answer1' } });
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://api.askusers.org/api/forms/form-1/submissions',
+        'https://api.askusers.org/api/public/forms/form-1/submissions',
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-API-Key': 'test-api-key',
           },
           body: JSON.stringify({
-            form_id: 'form-1',
-            ...data,
+            submission_data: { q1: 'answer1' },
           }),
         }
       );
@@ -125,7 +112,7 @@ describe('AskUsersClient', () => {
         statusText: 'Bad Request',
       });
 
-      const client = new AskUsersClient({ apiKey: 'test-key' });
+      const client = new AskUsersClient({});
       await expect(
         client.submitForm('form-1', { submission_data: {} })
       ).rejects.toThrow('Failed to submit form. Please try again later.');
@@ -133,7 +120,7 @@ describe('AskUsersClient', () => {
   });
 
   describe('getSurvey', () => {
-    it('makes correct GET request with API key header', async () => {
+    it('makes correct GET request without auth headers', async () => {
       const mockData = {
         survey: { id: 'survey-1', title: 'Test Survey' },
         questions: [],
@@ -143,16 +130,11 @@ describe('AskUsersClient', () => {
         json: async () => ({ data: mockData }),
       });
 
-      const client = new AskUsersClient({ apiKey: 'test-api-key' });
+      const client = new AskUsersClient({});
       const result = await client.getSurvey('survey-1');
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://api.askusers.org/api/surveys/survey-1/public',
-        {
-          headers: {
-            'X-API-Key': 'test-api-key',
-          },
-        }
+        'https://api.askusers.org/api/public/surveys/survey-1',
       );
       expect(result).toEqual(mockData);
     });
@@ -163,35 +145,30 @@ describe('AskUsersClient', () => {
         statusText: 'Forbidden',
       });
 
-      const client = new AskUsersClient({ apiKey: 'test-key' });
+      const client = new AskUsersClient({});
       await expect(client.getSurvey('survey-1')).rejects.toThrow('Failed to load survey. Please try again later.');
     });
   });
 
   describe('submitSurvey', () => {
-    it('makes correct POST request with body', async () => {
+    it('makes correct POST request without auth headers', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
       });
 
-      const client = new AskUsersClient({ apiKey: 'test-api-key' });
-      const data = {
-        response_data: { q1: 'answer1' },
-        session_id: 'session-123',
-      };
-      await client.submitSurvey('survey-1', data);
+      const client = new AskUsersClient({});
+      await client.submitSurvey('survey-1', { response_data: { q1: 'answer1' } });
 
       expect(mockFetch).toHaveBeenCalledWith(
-        'https://api.askusers.org/api/surveys/survey-1/responses',
+        'https://api.askusers.org/api/public/surveys/survey-1/responses',
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-API-Key': 'test-api-key',
           },
           body: JSON.stringify({
-            survey_id: 'survey-1',
-            ...data,
+            response_data: { q1: 'answer1' },
+            completion_status: 'completed',
           }),
         }
       );
@@ -203,7 +180,7 @@ describe('AskUsersClient', () => {
         statusText: 'Bad Request',
       });
 
-      const client = new AskUsersClient({ apiKey: 'test-key' });
+      const client = new AskUsersClient({});
       await expect(
         client.submitSurvey('survey-1', { response_data: {} })
       ).rejects.toThrow('Failed to submit survey. Please try again later.');

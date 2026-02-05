@@ -61,7 +61,7 @@ function FormWidget({
 }: FormWidgetProps) {
   // API client for fetching form data and submitting
   const [apiClient] = useState(() => {
-    if (apiKey) {
+    if (formId) {
       return new AskUsersClient({ apiKey, baseUrl });
     }
     return null;
@@ -158,7 +158,7 @@ function FormWidget({
   );
 
   // Show fetch loading state
-  if (fetchLoading || (!form && formId && apiKey)) {
+  if (fetchLoading || (!form && formId)) {
     return (
       <div className={`askusers-widget-container max-w-2xl mx-auto p-8 ${className}`}>
         <div className="text-center">
@@ -190,7 +190,7 @@ function FormWidget({
     return (
       <div className={`askusers-widget-container max-w-2xl mx-auto p-8 ${className}`}>
         <div className="p-4 rounded-lg bg-yellow-50 border border-yellow-200">
-          <p className="text-yellow-700">No form data available. Provide either a formId + apiKey or form data directly.</p>
+          <p className="text-yellow-700">No form data available. Provide either a formId or form data directly.</p>
         </div>
       </div>
     );
