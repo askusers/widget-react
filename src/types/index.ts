@@ -464,6 +464,7 @@ export interface FormWidgetProps {
   hideTitle?: boolean;
   hideDescription?: boolean;
   showPoweredBy?: boolean;
+  transparentBackground?: boolean;
   className?: string;
   onLoad?: () => void;
   onSubmit?: (data: Record<string, unknown>) => void;
@@ -487,6 +488,7 @@ export interface SurveyWidgetProps {
   hideTitle?: boolean;
   hideDescription?: boolean;
   showPoweredBy?: boolean;
+  transparentBackground?: boolean;
   className?: string;
   onLoad?: () => void;
   onSubmit?: (data: Record<string, unknown>) => void;

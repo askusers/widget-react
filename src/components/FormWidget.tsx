@@ -24,6 +24,8 @@ interface FormWidgetProps {
   hideTitle?: boolean;
   hideDescription?: boolean;
   showPoweredBy?: boolean;
+  /** When true, the widget wrapper has no background — blends with the host page. */
+  transparentBackground?: boolean;
 
   // Callbacks
   onLoad?: () => void;
@@ -49,6 +51,7 @@ function FormWidget({
   hideTitle = false,
   hideDescription = false,
   showPoweredBy,
+  transparentBackground = false,
   onLoad,
   onSubmit: onSubmitProp,
   onSubmitSuccess,
@@ -206,6 +209,7 @@ function FormWidget({
       hideTitle={hideTitle}
       hideDescription={hideDescription}
       showPoweredBy={showPoweredBy}
+      transparentBackground={transparentBackground}
       onSubmitProp={onSubmitProp}
       onSubmitSuccess={onSubmitSuccess}
       onSubmitError={onSubmitError}
@@ -232,6 +236,7 @@ interface FormWidgetInnerProps {
   hideTitle: boolean;
   hideDescription: boolean;
   showPoweredBy?: boolean;
+  transparentBackground: boolean;
   onSubmitProp?: (responses: Record<string, string | number | string[]>) => Promise<void>;
   onSubmitSuccess?: () => void;
   onSubmitError?: (error: Error) => void;
@@ -255,6 +260,7 @@ function FormWidgetInner({
   hideTitle,
   hideDescription,
   showPoweredBy: showPoweredByProp,
+  transparentBackground,
   onSubmitProp,
   onSubmitSuccess,
   onSubmitError,
@@ -353,6 +359,9 @@ function FormWidgetInner({
     applyBrandingStyles(brandingStyles),
     [brandingStyles]
   );
+
+  // When transparentBackground is on, don't apply the color scheme background
+  const elementBgColor = transparentBackground ? 'transparent' : brandingStyles.colors.background;
 
   // Generate appearance and layout styles
   const appearanceStyles = useMemo(() => {
@@ -1345,7 +1354,7 @@ function FormWidgetInner({
                       }}
                       className={`${sizeClasses[size as keyof typeof sizeClasses]} ${shapeClasses[buttonShape as keyof typeof shapeClasses]} border-2 font-semibold transition-colors`}
                       style={{
-                        backgroundColor: value === rating ? brandingStyles.colors.primary : brandingStyles.colors.background,
+                        backgroundColor: value === rating ? brandingStyles.colors.primary : elementBgColor,
                         color: value === rating ? 'white' : 'var(--form-text-color, ' + brandingStyles.colors.text + ')',
                         borderColor: value === rating ? brandingStyles.colors.primary : brandingStyles.colors.border,
                       }}
@@ -1360,7 +1369,7 @@ function FormWidgetInner({
                         if (value !== rating) {
                           const target = e.target as HTMLButtonElement;
                           target.style.borderColor = brandingStyles.colors.border;
-                          target.style.backgroundColor = brandingStyles.colors.background;
+                          target.style.backgroundColor = elementBgColor;
                         }
                       }}
                     >
@@ -1734,7 +1743,7 @@ function FormWidgetInner({
               className="flex-1 p-8 overflow-y-auto"
               style={{
                 ...cssVariables,
-                backgroundColor: 'var(--form-bg-color, ' + brandingStyles.colors.background + ')',
+                backgroundColor: transparentBackground ? 'transparent' : 'var(--form-bg-color, ' + brandingStyles.colors.background + ')',
                 color: 'var(--form-text-color, ' + brandingStyles.colors.text + ')',
                 fontFamily: `var(--form-font-family, 'Inter, system-ui, -apple-system, sans-serif')`,
                 minHeight: '100vh',
@@ -1768,7 +1777,7 @@ function FormWidgetInner({
         className={`askusers-widget-container max-w-2xl mx-auto p-8 ${className}`}
         style={{
           ...cssVariables,
-          backgroundColor: brandingStyles.colors.background,
+          backgroundColor: transparentBackground ? 'transparent' : brandingStyles.colors.background,
           color: brandingStyles.colors.text,
         }}
       >
@@ -1923,7 +1932,7 @@ function FormWidgetInner({
               className="flex-1 p-8 overflow-y-auto"
               style={{
                 ...cssVariables,
-                backgroundColor: 'var(--form-bg-color, ' + brandingStyles.colors.background + ')',
+                backgroundColor: transparentBackground ? 'transparent' : 'var(--form-bg-color, ' + brandingStyles.colors.background + ')',
                 color: 'var(--form-text-color, ' + brandingStyles.colors.text + ')',
                 fontFamily: `var(--form-font-family, 'Inter, system-ui, -apple-system, sans-serif')`,
                 minHeight: '100vh',
@@ -1957,7 +1966,7 @@ function FormWidgetInner({
         className={`askusers-widget-container max-w-2xl mx-auto p-8 ${className}`}
         style={{
           ...cssVariables,
-          backgroundColor: brandingStyles.colors.background,
+          backgroundColor: transparentBackground ? 'transparent' : brandingStyles.colors.background,
           color: brandingStyles.colors.text,
         }}
       >
@@ -2152,7 +2161,7 @@ function FormWidgetInner({
             className="flex-1 p-8 overflow-y-auto"
             style={{
               ...cssVariables,
-              backgroundColor: 'var(--form-bg-color, ' + brandingStyles.colors.background + ')',
+              backgroundColor: transparentBackground ? 'transparent' : 'var(--form-bg-color, ' + brandingStyles.colors.background + ')',
               color: 'var(--form-text-color, ' + brandingStyles.colors.text + ')',
               fontFamily: `var(--form-font-family, 'Inter, system-ui, -apple-system, sans-serif')`,
               minHeight: '100vh',
@@ -2236,7 +2245,7 @@ function FormWidgetInner({
         style={{
           ...cssVariables,
           ...appearanceStylesObject,
-          backgroundColor: 'var(--form-bg-color, ' + brandingStyles.colors.background + ')',
+          backgroundColor: transparentBackground ? 'transparent' : 'var(--form-bg-color, ' + brandingStyles.colors.background + ')',
           color: 'var(--form-text-color, ' + brandingStyles.colors.text + ')',
           fontFamily: `var(--form-font-family, 'Inter, system-ui, -apple-system, sans-serif')`,
         }}

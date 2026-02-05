@@ -31,6 +31,9 @@ interface SurveyWidgetProps {
   onSubmitSuccess?: () => void;
   onSubmitError?: (error: Error) => void;
 
+  // Background
+  transparentBackground?: boolean;
+
   // Internal/demo props (keep from original)
   isPreview?: boolean;
   isDemo?: boolean;
@@ -53,6 +56,7 @@ export function SurveyWidget({
   onSubmit,
   onSubmitSuccess,
   onSubmitError,
+  transparentBackground = false,
   isPreview = false,
   isDemo = false,
   thankYouMessage,
@@ -277,6 +281,7 @@ export function SurveyWidget({
       isPreview={isPreview}
       isDemo={isDemo}
       thankYouMessage={thankYouMessage}
+      transparentBackground={transparentBackground}
       forceSuccessState={forceSuccessState}
       forceLoadingState={forceLoadingState}
       responses={responses}
@@ -319,6 +324,7 @@ interface SurveyWidgetInnerProps {
   onSubmit?: (responses: Record<string, string | number | string[]>) => Promise<void>;
   onSubmitSuccess?: () => void;
   onSubmitError?: (error: Error) => void;
+  transparentBackground: boolean;
   isPreview: boolean;
   isDemo: boolean;
   thankYouMessage?: string;
@@ -356,6 +362,7 @@ function SurveyWidgetInner({
   onSubmit,
   onSubmitSuccess,
   onSubmitError,
+  transparentBackground,
   isPreview,
   isDemo,
   thankYouMessage,
@@ -493,6 +500,8 @@ function SurveyWidgetInner({
     applyBrandingStyles(brandingStyles),
     [brandingStyles]
   );
+
+  const elementBgColor = transparentBackground ? 'transparent' : brandingStyles.colors.background;
 
   // Generate appearance styles (CSS variables as string)
   const appearanceStyles = useMemo(() => {
@@ -1278,7 +1287,7 @@ function SurveyWidgetInner({
                       className={`${sizeClasses[size as keyof typeof sizeClasses]} ${shapeClasses[buttonShape as keyof typeof shapeClasses]} border-2 font-semibold transition-colors ${isPreview ? 'cursor-not-allowed opacity-75' : ''
                         }`}
                       style={{
-                        backgroundColor: value === rating ? `var(--form-primary-color, ${brandingStyles.colors.primary})` : `var(--form-bg-color, ${brandingStyles.colors.background})`,
+                        backgroundColor: value === rating ? `var(--form-primary-color, ${brandingStyles.colors.primary})` : elementBgColor,
                         color: value === rating ? 'white' : `var(--form-text-color, ${brandingStyles.colors.text})`,
                         borderColor: value === rating ? `var(--form-primary-color, ${brandingStyles.colors.primary})` : `var(--form-field-border-color, ${brandingStyles.colors.border})`,
                       }}
@@ -1293,7 +1302,7 @@ function SurveyWidgetInner({
                         if (!isPreview && value !== rating) {
                           const target = e.target as HTMLButtonElement;
                           target.style.borderColor = getComputedStyle(e.currentTarget).getPropertyValue('--form-field-border-color') || brandingStyles.colors.border;
-                          target.style.backgroundColor = getComputedStyle(e.currentTarget).getPropertyValue('--form-bg-color') || brandingStyles.colors.background;
+                          target.style.backgroundColor = elementBgColor;
                         }
                       }}
                     >
@@ -1611,7 +1620,7 @@ function SurveyWidgetInner({
                 className={`${shapeClasses[buttonShape as keyof typeof shapeClasses]} ${sizeClasses[size as keyof typeof sizeClasses]} border-2 font-medium transition-colors ${isPreview ? 'cursor-not-allowed opacity-75' : ''
                   }`}
                 style={{
-                  backgroundColor: likertResponses[stmtIndex] === scaleIndex + 1 ? `var(--form-primary-color, ${brandingStyles.colors.primary})` : `var(--form-bg-color, ${brandingStyles.colors.background})`,
+                  backgroundColor: likertResponses[stmtIndex] === scaleIndex + 1 ? `var(--form-primary-color, ${brandingStyles.colors.primary})` : elementBgColor,
                   color: likertResponses[stmtIndex] === scaleIndex + 1 ? 'white' : `var(--form-text-color, ${brandingStyles.colors.text})`,
                   borderColor: likertResponses[stmtIndex] === scaleIndex + 1 ? `var(--form-primary-color, ${brandingStyles.colors.primary})` : `var(--form-field-border-color, ${brandingStyles.colors.border})`,
                 }}
@@ -1626,7 +1635,7 @@ function SurveyWidgetInner({
                   if (!isPreview && likertResponses[stmtIndex] !== scaleIndex + 1) {
                     const target = e.target as HTMLButtonElement;
                     target.style.borderColor = getComputedStyle(e.currentTarget).getPropertyValue('--form-field-border-color') || brandingStyles.colors.border;
-                    target.style.backgroundColor = getComputedStyle(e.currentTarget).getPropertyValue('--form-bg-color') || brandingStyles.colors.background;
+                    target.style.backgroundColor = elementBgColor;
                   }
                 }}
               >
@@ -1761,7 +1770,7 @@ function SurveyWidgetInner({
                     borderColor: isDragging ? brandingStyles.colors.primary : brandingStyles.colors.border,
                     backgroundColor: isDragging
                       ? brandingStyles.colors.backgroundSecondary
-                      : brandingStyles.colors.background,
+                      : elementBgColor,
                   }}
                   draggable={!isPreview}
                   onDragStart={(e) => handleDragStart(e, displayPosition)}
@@ -2075,7 +2084,7 @@ function SurveyWidgetInner({
               className="flex-1 p-8 overflow-y-auto"
               style={{
                 ...cssVariables,
-                backgroundColor: 'var(--form-bg-color, ' + brandingStyles.colors.background + ')',
+                backgroundColor: transparentBackground ? 'transparent' : 'var(--form-bg-color, ' + brandingStyles.colors.background + ')',
                 color: 'var(--form-text-color, ' + brandingStyles.colors.text + ')',
                 fontFamily: `var(--form-font-family, 'Inter, system-ui, -apple-system, sans-serif')`,
                 minHeight: '100vh',
@@ -2109,7 +2118,7 @@ function SurveyWidgetInner({
         className={`max-w-2xl mx-auto p-8 ${className}`}
         style={{
           ...cssVariables,
-          backgroundColor: brandingStyles.colors.background,
+          backgroundColor: elementBgColor,
           color: brandingStyles.colors.text,
         }}
       >
@@ -2232,7 +2241,7 @@ function SurveyWidgetInner({
               className="flex-1 p-8 overflow-y-auto"
               style={{
                 ...cssVariables,
-                backgroundColor: 'var(--form-bg-color, ' + brandingStyles.colors.background + ')',
+                backgroundColor: transparentBackground ? 'transparent' : 'var(--form-bg-color, ' + brandingStyles.colors.background + ')',
                 color: 'var(--form-text-color, ' + brandingStyles.colors.text + ')',
                 fontFamily: `var(--form-font-family, 'Inter, system-ui, -apple-system, sans-serif')`,
                 minHeight: '100vh',
@@ -2266,7 +2275,7 @@ function SurveyWidgetInner({
         className={`max-w-2xl mx-auto p-8 ${className}`}
         style={{
           ...cssVariables,
-          backgroundColor: brandingStyles.colors.background,
+          backgroundColor: elementBgColor,
           color: brandingStyles.colors.text,
         }}
       >
@@ -2572,7 +2581,7 @@ function SurveyWidgetInner({
           className="flex-1 p-8 overflow-y-auto"
           style={{
             ...cssVariables,
-            backgroundColor: `var(--form-bg-color, ${brandingStyles.colors.background})`,
+            backgroundColor: transparentBackground ? 'transparent' : `var(--form-bg-color, ${brandingStyles.colors.background})`,
             color: `var(--form-text-color, ${brandingStyles.colors.text})`,
             fontFamily: `var(--form-font-family, 'Inter, system-ui, -apple-system, sans-serif')`,
             minHeight: '100vh',
@@ -2608,7 +2617,7 @@ function SurveyWidgetInner({
       style={{
         ...cssVariables,
         ...appearanceStylesObject,
-        backgroundColor: `var(--form-bg-color, ${brandingStyles.colors.background})`,
+        backgroundColor: transparentBackground ? 'transparent' : `var(--form-bg-color, ${brandingStyles.colors.background})`,
         color: `var(--form-text-color, ${brandingStyles.colors.text})`,
         fontFamily: `var(--form-font-family, 'Inter, system-ui, -apple-system, sans-serif')`,
       }}
