@@ -1962,16 +1962,23 @@ function FormWidgetInner({
 
     // Classic layout
     return (
-      <div
-        className={`askusers-widget-container max-w-2xl mx-auto p-8 ${className}`}
-        style={{
-          ...cssVariables,
-          backgroundColor: transparentBackground ? 'transparent' : brandingStyles.colors.background,
-          color: brandingStyles.colors.text,
-        }}
-      >
-        {successContent}
-      </div>
+      <>
+        {formStylesheet && <style>{formStylesheet}</style>}
+        <div
+          className={`askusers-widget-container max-w-2xl mx-auto p-8 ${className} ${theme === 'dark' ? 'dark' : ''}`}
+          style={{
+            ...cssVariables,
+            ...appearanceStylesObject,
+            backgroundColor: transparentBackground ? 'transparent' : 'var(--form-bg-color, ' + brandingStyles.colors.background + ')',
+            color: 'var(--form-text-color, ' + brandingStyles.colors.text + ')',
+            fontFamily: `var(--form-font-family, 'Inter, system-ui, -apple-system, sans-serif')`,
+          }}
+          data-form-theme
+          data-theme={theme}
+        >
+          {successContent}
+        </div>
+      </>
     );
   }
 
@@ -2073,6 +2080,12 @@ function FormWidgetInner({
                 backgroundColor: brandingStyles.colors.border,
                 color: brandingStyles.colors.text,
               }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = brandingStyles.colors.backgroundSecondary;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = brandingStyles.colors.border;
+              }}
             >
               Previous
             </button>
@@ -2088,6 +2101,12 @@ function FormWidgetInner({
               style={{
                 backgroundColor: brandingStyles.colors.primary,
                 color: 'white',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = brandingStyles.colors.primaryHover;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = brandingStyles.colors.primary;
               }}
             >
               Next
@@ -2112,13 +2131,13 @@ function FormWidgetInner({
                   opacity: (submitting || isDemo) ? 0.7 : 1,
                 }}
                 onMouseEnter={(e) => {
-                  const hoverBgColor = getComputedStyle(e.currentTarget).getPropertyValue('--form-button-hover-bg-color');
-                  if (hoverBgColor) {
-                    e.currentTarget.style.backgroundColor = hoverBgColor;
-                  }
+                  if (submitting || isDemo) return;
+                  const hoverBgColor = getComputedStyle(e.currentTarget).getPropertyValue('--form-button-hover-bg-color').trim() || brandingStyles.colors.primaryHover;
+                  e.currentTarget.style.backgroundColor = hoverBgColor;
                 }}
                 onMouseLeave={(e) => {
-                  const bgColor = getComputedStyle(e.currentTarget).getPropertyValue('--form-button-bg-color') || brandingStyles.colors.primary;
+                  if (submitting || isDemo) return;
+                  const bgColor = getComputedStyle(e.currentTarget).getPropertyValue('--form-button-bg-color').trim() || brandingStyles.colors.primary;
                   e.currentTarget.style.backgroundColor = bgColor;
                 }}
               >

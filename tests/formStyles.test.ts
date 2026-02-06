@@ -138,6 +138,29 @@ describe('formStyles utilities', () => {
       expect(styles).toContain('--form-field-text-color: #222222');
     });
 
+    it('generates --form-bg-secondary-color in default (no config) case', () => {
+      const styles = generateFormStyles();
+      expect(styles).toContain('--form-bg-secondary-color: #F8FAFC');
+    });
+
+    it('generates --form-bg-secondary-color derived from formBackground in light theme', () => {
+      const config: FormAppearanceConfig = {
+        theme: {
+          light: {
+            primary: '#ff0000',
+            text: '#111111',
+            fieldText: '#222222',
+            fieldBackground: '#ffffff',
+            formBackground: '#fafafa',
+          },
+        },
+      };
+      const styles = generateFormStyles(config);
+      expect(styles).toContain('--form-bg-secondary-color:');
+      // Should be derived from formBackground (#fafafa) via darkenColor
+      expect(styles).not.toContain('--form-bg-secondary-color: #F8FAFC');
+    });
+
     it('generates dark theme color variables when dark mode enabled', () => {
       const config: FormAppearanceConfig = {
         theme: {
@@ -198,6 +221,23 @@ describe('formStyles utilities', () => {
       expect(css).toContain('[data-theme="dark"] [data-form-theme]');
       expect(css).toContain('--form-primary-color: #60a5fa');
       expect(css).toContain('--form-field-text-color: #e2e8f0');
+    });
+
+    it('includes --form-bg-secondary-color in dark mode stylesheet', () => {
+      const config: FormAppearanceConfig = {
+        theme: {
+          enableDarkMode: true,
+          dark: {
+            primary: '#60a5fa',
+            text: '#f1f5f9',
+            fieldText: '#e2e8f0',
+            fieldBackground: '#1e293b',
+            formBackground: '#0f172a',
+          },
+        },
+      };
+      const css = generateFormStylesheet(config);
+      expect(css).toContain('--form-bg-secondary-color: #1e293b');
     });
   });
 

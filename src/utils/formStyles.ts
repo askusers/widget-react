@@ -90,6 +90,7 @@ export function generateFormStyles(
 
   if (!appearanceConfig) {
     styles.push(`--form-font-family: ${FONT_FAMILIES.inter};`);
+    styles.push(`--form-bg-secondary-color: #F8FAFC;`);
     return styles.join(' ');
   }
 
@@ -120,6 +121,8 @@ export function generateFormStyles(
 
     styles.push(`--form-card-bg-color: ${formBg};`);
     styles.push(`--form-card-border-color: ${fieldTextColor}20;`);
+
+    styles.push(`--form-bg-secondary-color: ${darkenColor(formBg, 3)};`);
   }
 
   if (appearanceConfig.theme?.enableDarkMode && appearanceConfig.theme?.dark) {
@@ -149,6 +152,8 @@ export function generateFormStyles(
 
     styles.push(`--form-dark-card-bg-color: ${darkFormBg};`);
     styles.push(`--form-dark-card-border-color: ${darkFieldTextColor}20;`);
+
+    styles.push(`--form-dark-bg-secondary-color: ${darkFieldBg};`);
   }
 
   if (appearanceConfig.typography) {
@@ -331,6 +336,7 @@ export function generateFormStylesheet(
         --form-button-text-color: #FFFFFF;
         --form-card-bg-color: ${darkFormBg};
         --form-card-border-color: ${darkFieldTextColor}20;
+        --form-bg-secondary-color: ${darkFieldBg};
       }
     `);
   }

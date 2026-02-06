@@ -2202,7 +2202,17 @@ function SurveyWidgetInner({
           <div className="text-center mt-6">
             <button
               type="button"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+              className="text-white px-6 py-2 rounded-lg font-medium transition-colors"
+              style={{
+                backgroundColor: brandingStyles.colors.primary,
+                color: 'var(--form-button-text-color, white)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = brandingStyles.colors.primaryHover;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = brandingStyles.colors.primary;
+              }}
               onClick={() => {
                 setSubmitted(false);
                 setResponses({});
@@ -2272,12 +2282,16 @@ function SurveyWidgetInner({
     // Classic layout
     return (
       <div
-        className={`max-w-2xl mx-auto p-8 ${className}`}
+        className={`askusers-survey-widget-container max-w-2xl mx-auto p-8 ${className} ${theme === 'dark' ? 'dark' : ''}`}
         style={{
           ...cssVariables,
-          backgroundColor: elementBgColor,
-          color: brandingStyles.colors.text,
+          ...appearanceStylesObject,
+          backgroundColor: transparentBackground ? 'transparent' : 'var(--form-bg-color, ' + brandingStyles.colors.background + ')',
+          color: 'var(--form-text-color, ' + brandingStyles.colors.text + ')',
+          fontFamily: `var(--form-font-family, 'Inter, system-ui, -apple-system, sans-serif')`,
         }}
+        data-form-theme
+        data-theme={theme}
       >
         {successContent}
       </div>
@@ -2438,15 +2452,13 @@ function SurveyWidgetInner({
               }}
               onMouseEnter={(e) => {
                 if (!submitting) {
-                  const hoverBgColor = getComputedStyle(e.currentTarget).getPropertyValue('--form-button-hover-bg-color');
-                  if (hoverBgColor) {
-                    e.currentTarget.style.backgroundColor = hoverBgColor;
-                  }
+                  const hoverBgColor = getComputedStyle(e.currentTarget).getPropertyValue('--form-button-hover-bg-color').trim() || brandingStyles.colors.primaryHover;
+                  e.currentTarget.style.backgroundColor = hoverBgColor;
                 }
               }}
               onMouseLeave={(e) => {
                 if (!submitting) {
-                  const bgColor = getComputedStyle(e.currentTarget).getPropertyValue('--form-button-bg-color') || brandingStyles.colors.primary;
+                  const bgColor = getComputedStyle(e.currentTarget).getPropertyValue('--form-button-bg-color').trim() || brandingStyles.colors.primary;
                   e.currentTarget.style.backgroundColor = bgColor;
                 }
               }}
@@ -2469,15 +2481,13 @@ function SurveyWidgetInner({
               }}
               onMouseEnter={(e) => {
                 if (!submitting) {
-                  const hoverBgColor = getComputedStyle(e.currentTarget).getPropertyValue('--form-button-hover-bg-color');
-                  if (hoverBgColor) {
-                    e.currentTarget.style.backgroundColor = hoverBgColor;
-                  }
+                  const hoverBgColor = getComputedStyle(e.currentTarget).getPropertyValue('--form-button-hover-bg-color').trim() || brandingStyles.colors.primaryHover;
+                  e.currentTarget.style.backgroundColor = hoverBgColor;
                 }
               }}
               onMouseLeave={(e) => {
                 if (!submitting) {
-                  const bgColor = getComputedStyle(e.currentTarget).getPropertyValue('--form-button-bg-color') || brandingStyles.colors.primary;
+                  const bgColor = getComputedStyle(e.currentTarget).getPropertyValue('--form-button-bg-color').trim() || brandingStyles.colors.primary;
                   e.currentTarget.style.backgroundColor = bgColor;
                 }
               }}
