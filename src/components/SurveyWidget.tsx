@@ -1287,22 +1287,26 @@ function SurveyWidgetInner({
                       className={`${sizeClasses[size as keyof typeof sizeClasses]} ${shapeClasses[buttonShape as keyof typeof shapeClasses]} border-2 font-semibold transition-colors ${isPreview ? 'cursor-not-allowed opacity-75' : ''
                         }`}
                       style={{
-                        backgroundColor: value === rating ? `var(--form-primary-color, ${brandingStyles.colors.primary})` : elementBgColor,
-                        color: value === rating ? 'white' : `var(--form-text-color, ${brandingStyles.colors.text})`,
-                        borderColor: value === rating ? `var(--form-primary-color, ${brandingStyles.colors.primary})` : `var(--form-field-border-color, ${brandingStyles.colors.border})`,
+                        backgroundColor: value === rating
+                          ? `var(--form-primary-color, ${brandingStyles.colors.primary})`
+                          : `var(--form-field-bg-color, ${elementBgColor})`,
+                        color: value === rating ? '#FFFFFF' : `var(--form-field-text-color, ${brandingStyles.colors.text})`,
+                        borderColor: value === rating
+                          ? `var(--form-primary-color, ${brandingStyles.colors.primary})`
+                          : `var(--form-field-border-color, ${brandingStyles.colors.border})`,
                       }}
                       onMouseEnter={(e) => {
                         if (!isPreview && value !== rating) {
-                          const target = e.target as HTMLButtonElement;
-                          target.style.borderColor = getComputedStyle(e.currentTarget).getPropertyValue('--form-primary-color') || brandingStyles.colors.primary;
-                          target.style.backgroundColor = brandingStyles.colors.backgroundSecondary;
+                          const target = e.currentTarget;
+                          target.style.borderColor = `var(--form-primary-color, ${brandingStyles.colors.primary})`;
+                          target.style.backgroundColor = `var(--form-bg-secondary-color, ${brandingStyles.colors.backgroundSecondary})`;
                         }
                       }}
                       onMouseLeave={(e) => {
                         if (!isPreview && value !== rating) {
-                          const target = e.target as HTMLButtonElement;
-                          target.style.borderColor = getComputedStyle(e.currentTarget).getPropertyValue('--form-field-border-color') || brandingStyles.colors.border;
-                          target.style.backgroundColor = elementBgColor;
+                          const target = e.currentTarget;
+                          target.style.borderColor = `var(--form-field-border-color, ${brandingStyles.colors.border})`;
+                          target.style.backgroundColor = `var(--form-field-bg-color, ${elementBgColor})`;
                         }
                       }}
                     >
